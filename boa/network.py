@@ -599,8 +599,14 @@ class NetworkEnv(Env):
 
         print(f"{tx_hash} mined in block {receipt['blockHash']}!")
 
+        # wait for the block to be mined
+        block_info = None
+        while block_info is None:
+            block_info = self._rpc.fetch("eth_getBlockByNumber", [receipt["blockNumber"], False])
+            time.sleep(1)
+
         # the block was mined, reset state
-        self._reset_fork(block_identifier=receipt["blockNumber"])
+        self._reset_fork(block_identifier=block_info["number"])
 
         t_obj = TraceObject(trace) if trace is not None else None
         return tx_data, receipt, t_obj
